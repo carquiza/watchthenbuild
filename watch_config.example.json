@@ -1,0 +1,22 @@
+{
+  "groups": [
+    {
+      "name": "Main Project",
+      "batch_file": "D:/path/to/build_main.bat",
+      "files": [
+        "D:/projects/main/CMakeLists.txt",
+        "D:/projects/main/config.json",
+        "D:/projects/main/src/important_file.cpp"
+      ]
+    },
+    {
+      "name": "Plugin System",
+      "batch_file": "D:/path/to/build_plugins.bat",
+      "files": [
+        "D:/projects/plugins/core/CMakeLists.txt",
+        "D:/projects/plugins/extensions/plugin.config"
+      ]
+    }
+  ],
+  "debounce_seconds": 2
+}
