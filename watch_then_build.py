@@ -13,6 +13,13 @@ class FileWatchHandler(FileSystemEventHandler):
         self.tracked_files = [Path(f).resolve() for f in tracked_files]
         self.debounce_seconds = debounce_seconds
         self.last_run = 0
+        # Track actual modification times to filter out access-only events
+        self.file_mtimes = {}
+        for f in self.tracked_files:
+            try:
+                self.file_mtimes[f] = f.stat().st_mtime
+            except OSError:
+                self.file_mtimes[f] = 0
     
     def on_modified(self, event):
         if event.is_directory:
@@ -21,6 +28,18 @@ class FileWatchHandler(FileSystemEventHandler):
         # Check if the modified file is one of our tracked files
         modified_path = Path(event.src_path).resolve()
         if modified_path in self.tracked_files:
+            # Check if the actual modification time changed (not just access time)
+            try:
+                current_mtime = modified_path.stat().st_mtime
+            except OSError:
+                return
+            
+            last_mtime = self.file_mtimes.get(modified_path, 0)
+            if current_mtime == last_mtime:
+                # File was accessed but not actually modified - ignore
+                return
+            
+            self.file_mtimes[modified_path] = current_mtime
             current_time = time.time()
             
             if current_time - self.last_run > self.debounce_seconds:
